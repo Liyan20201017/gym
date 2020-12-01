@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.SpringBoot.dao.IOrderDao">
+    <select id="showCardRecord" resultType="Map">
+        select * from cardrecord
+        left join user on
+        cardrecord.cardrecord_user_id=user_id
+        left join member on
+        cardrecord.cardrecord_member_id=member.member_id
+        order by cardrecord_time desc
+    </select>
+
+    <select id="showTopUp" resultType="Map">
+      select * from topup
+left join user on
+topup.topup_user_id=`user`.user_id
+left join member on
+member.member_id=user.user_member_id order by topup_time desc
+    </select>
+
+    <select id="showOrder" resultType="Map">
+       select * from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+left join staff on
+staff.staff_id=orders.order_staff_id
+where order_endtime >= curdate()
+order by order_time desc
+    </select>
+
+    <select id="showOrdered" resultType="Map">
+        select * from orders
+        left join user on
+        orders.order_user_id=user.user_id
+        left join combo on
+        orders.order_combo_id=combo.combo_id
+        left join staff on
+        staff.staff_id=orders.order_staff_id
+        where order_endtime &lt; curdate()
+        order by order_time desc
+    </select>
+
+    <select id="MaxCardRecord" resultType="Map">
+select sum(member.member_price) value,'开卡消费' as name from cardrecord
+left join member on
+cardrecord.cardrecord_member_id=member.member_id
+    </select>
+    <select id="MaxTopUp" resultType="Map">
+select sum(topup_price) value,'充值消费' as name from topup
+    </select>
+    <select id="MaxOrder" resultType="Map">
+select sum(combo.combo_price) value,'套餐消费' as name from orders left join combo on orders.order_combo_id=combo.combo_id
+    </select>
+
+
+    <select id="calcCardRecord" resultType="Map">
+        select sum(member.member_price) price,cardrecord.cardrecord_time time from cardrecord
+        left join member on
+        cardrecord.cardrecord_member_id=member.member_id
+        group by cardrecord_time
+        order by cardrecord_time desc limit 0,7
+    </select>
+
+    <select id="selectCardRecord" resultType="Map">
+        select sum(member.member_price) price,cardrecord.cardrecord_time time from cardrecord
+        left join member on
+        cardrecord.cardrecord_member_id=member.member_id
+        where cardrecord_time between #{start} and #{end}
+        group by cardrecord_time
+        order by cardrecord_time desc limit 0,7
+    </select>
+
+    <select id="calcTopUp" resultType="Map">
+select sum(topup.topup_price) price,topup.topup_time time  from topup
+left join user on
+topup.topup_user_id=`user`.user_id
+left join member on
+member.member_id=user.user_member_id
+group by topup.topup_time
+order by topup.topup_time desc limit 0,7
+    </select>
+
+    <select id="selectTopUp" resultType="Map">
+   select sum(combo.combo_price) price,orders.order_time time from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+where topup_time between #{start} and #{end}
+group by orders.order_time
+order by orders.order_time desc limit 0,7
+    </select>
+
+    <select id="calcOrder" resultType="Map">
+   select sum(combo.combo_price) price,orders.order_time time from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+group by orders. order_time
+order by orders. order_time desc limit 0,7
+    </select>
+
+    <select id="selectCalcOrder" resultType="Map">
+   select sum(combo.combo_price) price,orders.order_time time from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+where order_time between #{start} and #{end}
+group by orders.order_time
+order by orders.order_time desc limit 0,7
+    </select>
+
+
+
+    <select id="searchOrder" resultType="Map">
+select * from orders
+left join user on
+orders.order_user_id  =user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+where orders.order_time between #{start} and #{end}
+order by order_time desc
+    </select>
+
+    <select id="searchOrder2" resultType="Map">
+select * from cardrecord
+        left join user on
+        cardrecord.cardrecord_user_id=user_id
+        left join member on
+        cardrecord.cardrecord_member_id=member.member_id
+where cardrecord.cardrecord_time between #{start} and #{end}
+order by cardrecord.cardrecord_time desc
+    </select>
+
+    <select id="searchOrder3" resultType="Map">
+select * from topup
+left join user on
+topup.topup_user_id=`user`.user_id
+where topup.topup_time between #{start} and #{end}
+order by topup.topup_time desc
+    </select>
+</mapper>

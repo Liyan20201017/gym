@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--dao文件所处位置-->
+<mapper namespace="com.gym.springBootGateWay.dao.IStaffDao">
+    <!--查询员工登陆信息-->
+    <select id="showStaff" resultType="Map">
+      select * from staff
+left join role_staff on
+role_staff.staff_id=staff.staff_id
+left join role on
+role_staff.role_id=role.role_id
+where staff_name=#{staff_name} and staff_pwd=#{staff_pwd}
+    </select>
+
+    <select id="showStaffPhone" resultType="Staff">
+      select * from staff where staff_phone=#{staff_phone}
+    </select>
+
+    <select id="findStaffByMenu" resultMap="findMenu">
+    select
+ttt.menu_id,ttt.menu_name,ttt.menu_pid,ttt.menu_path,ttt.menu_component,ttt.menu_icon,
+bbb.menu_id menu2_id,bbb.menu_name menu2_name,bbb.menu_pid menu2_pid,bbb.menu_path menu2_path,
+bbb.menu_component menu2_component,bbb.menu_icon menu2_icon
+from(
+select m.menu_id,m.menu_name,m.menu_pid,m.menu_path,m.menu_component,m.menu_icon from menu m
+where m.menu_id in(
+select distinct rm.mid from role_menu rm where rm.rid in(
+select rf.role_id from role_staff rf where rf.staff_id=(
+select staff_id from staff s where s.staff_name=#{staff_name} and s.staff_pwd=#{staff_pwd})))
+) ttt
+left join
+(
+select m.menu_id,m.menu_name,m.menu_pid,m.menu_path,m.menu_component,m.menu_icon from menu m
+where m.menu_id in(
+select distinct rm.mid from role_menu rm where rm.rid in(
+select rf.role_id from role_staff rf where rf.staff_id=(
+select staff_id from staff s where s.staff_name=#{staff_name} and s.staff_pwd=#{staff_pwd})))
+) bbb
+on ttt.menu_id=bbb.menu_pid
+where ttt.menu_pid=0
+ORDER BY menu_id asc
+    </select>
+    <resultMap id="findMenu" type="Menu">
+        <id column="menu_id" property="menu_id"></id>
+        <id column="menu_name" property="menu_name"></id>
+        <result column="menu_pid" property="menu_pid"></result>
+        <result column="menu_path" property="menu_path"></result>
+        <result column="menu_component" property="menu_component"></result>
+        <result column="menu_icon" property="menu_icon"></result>
+        <collection property="menuList" ofType="Menu">
+            <id column="menu2_id" property="menu_id"></id>
+            <result column="menu2_path" property="menu_path"></result>
+            <result column="menu2_name" property="menu_name"></result>
+            <result column="menu2_component" property="menu_component"></result>
+        </collection>
+    </resultMap>
+
+
+    <!--0 是审核通过   2是审核不通过-->
+    <update id="updStaffLeave">
+        update staffleave set leave_state=0 where leave_id=#{leave_id}
+    </update>
+
+    <update id="updStaffLeaveFail">
+        update staffleave set leave_state=2 where leave_id=#{leave_id}
+    </update>
+
+    <update id="updCourseState">
+        update course set course_state=0 where course_staff_id=#{staff_id} and course_time between #{leave_time} and #{leave_deadline}
+    </update>
+
+    <update id="ckdAndUpdStaffState">
+    update staff set staff_state=1 where staff_id in (select leave_staff_id from staffleave where leave_deadline=curdate())
+    </update>
+
+    <update id="updateStaffLeaveById">
+        update staff set staff_state=3 where staff_id=#{leave_staff_id}
+    </update>
+
+    <update id="updateStaffLeaveFailById">
+        update staff set staff_state=1 where staff_id=#{staff_id}
+    </update>
+</mapper>

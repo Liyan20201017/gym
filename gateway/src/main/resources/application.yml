@@ -1,0 +1,48 @@
+server:
+  port: 8002
+spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://127.0.0.1:3306/gym?useUnicode=true&characterEncoding=gbk&zeroDateTimeBehavior=convertToNull&useSSL=false
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+  application:
+    name: api-gateway
+  # 配置api
+  cloud:
+    gateway:
+      #设置跨域
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: product_route   # 路由的唯一标识，只要不重复都可以，如果不写默认会通过UUID产生，一般写成被路由的服务名称
+          #uri: http://localhost:8001/  # 被路由的地址
+          uri: lb://order
+          order: 1                     #表示优先级  数字越小优先级越高
+          predicates:                  #断言: 执行路由的判断条件
+            - Path=/order/**
+          filters:                     # 过滤器: 可以在请求前或请求后作一些手脚
+            - StripPrefix=1
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+
+
+my:
+  jwt:
+    #跳过认证的路由
+    skip-auth-urls:
+      - /product/showStaff
+      - /test
+    effective-time: 7d #有效时长  单位：d:天、h:小时、m:分钟、s:秒
+
+
+  mybatis:
+    mapper-locations: classpath:mapper/*.xml
+    type-aliases-package: com.gym.entity
+

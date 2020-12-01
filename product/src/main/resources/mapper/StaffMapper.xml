@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--dao文件所处位置-->
+<mapper namespace="com.gym.SpringBoot.dao.IStaffDao">
+    <!--查询员工登陆信息-->
+    <select id="showStaff" resultType="java.util.Map">
+     select s.*,r.* from staff s
+left join role_staff rs
+on s.staff_id=rs.staff_id
+left join role r
+on rs.role_id=r.role_id
+
+<where>
+     s.staff_id not in (1)
+    <if test="staff_name!='' and staff_name!=null">
+        and s.staff_name like concat('%', #{staff_name}, '%')
+    </if>
+</where>
+ order by role_id,staff_state
+    </select>
+
+    <select id="findStaffById" resultType="java.util.Map">
+      select s.*,r.* from staff s
+left join role_staff rs
+on s.staff_id=rs.staff_id
+left join role r
+on rs.role_id=r.role_id
+where s.staff_id=#{staff_id}
+    </select>
+
+    <update id="updateStaffById">
+        update staff set
+staff_name=#{staff_name},
+staff_sex=#{staff_sex},
+staff_age=#{staff_age},
+staff_phone=#{staff_phone},
+staff_address=#{staff_address},
+staff_entrytime=#{staff_entrytime},
+staff_state=#{staff_state}
+where staff_id=#{staff_id}
+    </update>
+
+    <select id="findStaffRoleById" resultType="java.util.Map">
+      select * from role_staff where staff_id=#{staff_id}
+    </select>
+
+    <update id="confirmSetRole">
+        update role_staff set role_id=#{role_id} where staff_id=#{staff_id}
+    </update>
+
+    <insert id="addStaff"  useGeneratedKeys="true" keyProperty="staff_id">
+        insert into staff values(null,#{staff_name},'123456',#{staff_sex},#{staff_age},#{staff_phone},#{staff_address},#{staff_entrytime},'1')
+    </insert>
+
+    <insert id="addRoleStaff">
+        insert into role_staff values(2,#{staffid})
+    </insert>
+
+    <select id="findStaffByPhone" resultType="Staff">
+      select * from staff where staff_phone=#{staff_phone}
+    </select>
+
+    <insert id="addleave">
+        insert into staffleave
+        values(null,#{leave_staff_id},#{leave_type},#{leave_reason},#{leave_starttime},#{leave_deadline},datediff(#{leave_deadline}, #{leave_starttime})+1,1)
+    </insert>
+
+    <select id="showStaffLeave" resultType="Map">
+        select * from staffleave left join
+        staff on staffleave.leave_staff_id=staff.staff_id
+        where leave_deadline >= CURDATE()
+        order by leave_time
+    </select>
+
+    <select id="showStaffLeaveed" resultType="Map">
+        select * from staffleave left join
+        staff on staffleave.leave_staff_id=staff.staff_id
+        where leave_deadline &lt; CURDATE()
+        order by leave_time desc
+    </select>
+
+    <select id="selectStaffLeave" resultType="Map">
+        select * from staffleave left join
+        staff on staffleave.leave_staff_id=staff.staff_id
+        where leave_deadline &lt; CURDATE() and leave_time between #{start} and #{end}
+        order by leave_time desc
+    </select>
+
+    <update id="updStaffLeave">
+        update staffleave set leave_state=0 where leave_id=#{leave_id}
+    </update>
+
+    <select id="findStaffLeaveById" resultType="Map">
+      select * from staffleave where leave_staff_id=#{staff_id} and leave_time=curdate() and leave_state=1
+    </select>
+
+    <select id="ckdCourseByStaffId" resultType="Map">
+        select * from course where course_staff_id=#{staff_id} and course_time=#{course_time}
+    </select>
+
+    <update id="updPersonCenterById">
+        update staff set staff_name=#{staff_name},staff_sex=#{staff_sex},staff_phone=#{staff_phone},staff_address=#{staff_address} where staff_id=#{staff_id}
+    </update>
+
+    <select id="findStaffByPwd" resultType="Map">
+      select * from staff where staff_pwd=#{staff_pwd} and staff_id=#{staff_id}
+    </select>
+
+    <update id="updStaffPwdById">
+        update staff set staff_pwd=#{staff_pwd} where staff_id=#{staff_id}
+    </update>
+</mapper>

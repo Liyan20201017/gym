@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.SpringBoot.dao.ICourseDao">
+    <select id="showCourse" resultType="Map">
+      select * from course c left join staff s
+on c.course_staff_id=s.staff_id
+left join site st on
+c.course_site_id=st.site_id
+where course_time>=curdate()
+order by course_time
+    </select>
+
+    <select id="showCourseRecord" resultType="Map">
+        select * from course c left join staff s
+        on c.course_staff_id=s.staff_id
+        left join site st on
+        c.course_site_id=st.site_id
+        where course_time &lt;curdate()
+        order by course_time desc
+    </select>
+
+    <select id="findCourseById" resultType="Map">
+      select * from course c left join staff s
+    on c.course_staff_id=s.staff_id
+    left join site st on
+    c.course_site_id=st.site_id where course_id=#{course_id}
+    </select>
+
+    <select id="showCoach" resultType="Map">
+        select s.*,r.* from staff s
+    left join role_staff rs
+    on s.staff_id=rs.staff_id
+    left join role r
+    on rs.role_id=r.role_id
+    where r.role_id=2
+    </select>
+
+    <update id="updCourseById">
+      update course set course_name=#{course_name},course_staff_id=#{course_staff_id},course_state=1 where course_id=#{course_id}
+    </update>
+
+    <select id="showNormalSite" resultType="Site">
+      select * from site  where site_state=1
+    </select>
+
+    <insert id="addCourse">
+        insert into course values(null,#{course_name},#{course_staff_id},#{course_site_id},#{course_time},1)
+    </insert>
+
+    <select id="showCombo" resultType="Map">
+        select * from combo left join staff on combo.combo_staff_id=staff.staff_id order by combo_price desc
+    </select>
+
+    <select id="findComboById" resultType="Combo">
+        select * from combo where combo_id=#{combo_id}
+    </select>
+
+    <update id="updComboById">
+        update combo set
+        combo_name=#{combo_name},
+        combo_staff_id=#{combo_staff_id},
+        combo_price=#{combo_price},
+        combo_count=#{combo_count},
+        combo_details=#{combo_details}
+        where combo_id=#{combo_id}
+    </update>
+
+    <insert id="addCombo">
+        insert into combo values(null,#{combo_name},#{combo_staff_id},#{combo_price},#{combo_count},#{combo_details},1)
+    </insert>
+
+    <update id="updComboStateById">
+        update combo set combo_state=#{combo_state} where combo_id=#{combo_id}
+    </update>
+
+    <insert id="addOrder">
+      insert into orders values(null,#{user_id},#{order_combo_id},#{combo_staff_id},now(),date_add(now(), interval #{combo_count} day),'15:00:00',1)
+    </insert>
+
+    <select id="ckdCourseByStaffLeaveId" resultType="Map">
+    select s.*,r.*,sl.* from staff s
+left join role_staff rs
+on s.staff_id=rs.staff_id
+left join role r
+on rs.role_id=r.role_id
+left join staffleave sl
+on sl.leave_staff_id=s.staff_id
+where sl.leave_staff_id=#{staff_id}
+and #{course_time} between leave_time and leave_deadline and leave_state!=2
+    </select>
+
+
+    <update id="updOrderById">
+        update orders set order_staff_id=#{staff_id},order_studytime=#{order_studytime} where order_id=#{order_id}
+    </update>
+
+    <select id="ckdUserComboByStaffId" resultType="Map">
+      select * from orders where order_staff_id=#{order_staff_id} and order_studytime=#{order_studytime}
+    </select>
+
+    <select id="findStaffByLeave" resultType="Map">
+        select * from staffleave  where leave_staff_id=#{leave_staff_id} and #{leave_time} between leave_time and leave_deadline
+    </select>
+
+    <select id="selectCombo" resultType="Map">
+select * from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+left join staff on
+staff.staff_id=orders.order_staff_id
+where order_endtime >= curdate() and order_combo_id=#{combo_id}
+order by order_time desc
+    </select>
+
+    <select id="selectUserCombo" resultType="Map">
+select * from orders
+left join user on
+orders.order_user_id=user.user_id
+left join combo on
+orders.order_combo_id=combo.combo_id
+left join staff on
+staff.staff_id=orders.order_staff_id
+where order_endtime >= curdate() and order_combo_id=#{comboid} and order_time between #{start} and #{end}
+order by order_time desc
+    </select>
+</mapper>

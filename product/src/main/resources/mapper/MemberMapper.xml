@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.SpringBoot.dao.IMemberDao">
+    <select id="showUser" resultType="java.util.Map">
+select u.*,m.*,datediff(u.user_finshtime,curdate()) computerCount,floor((m.member_price/m.member_count)*datediff(u.user_finshtime,curdate())) computerPrice
+from user u
+left join member m
+on u.user_member_id=m.member_id
+<where>
+    <if test="user_name!='' and user_name!=null">
+        and u.user_name like concat('%', #{user_name}, '%')
+    </if>
+</where>
+order by computerCount desc
+    </select>
+    <select id="findUserById" resultType="User">
+      select * from user where user_id=#{user_id}
+    </select>
+
+    <update id="updateUserById">
+        update user set user_name=#{user_name},user_phone=#{user_phone} where user_id=#{user_id}
+    </update>
+
+    <select id="findUserByPhones" resultType="User">
+      select * from user where user_phone=#{user_phone}
+    </select>
+
+    <select id="findUserByMemberState" resultType="java.util.Map">
+      select user_id,user_state from user where user_id=#{user_id}
+    </select>
+
+    <update id="updateUserByMemberState">
+        update user set user_state=#{user_state} where user_id=#{user_id}
+    </update>
+
+    <update id="updExpireUser">
+        update user set user_state=2 where user_id in (select a.user_id from (select user_id from user where datediff(user_finshtime,curdate())&lt;=0) as a)
+    </update>
+
+    <select id="showMember" resultType="Member">
+      select * from member
+    </select>
+
+    <insert id="addUser">
+        insert into user values (null,#{user_name},'123456',#{user_phone},1,#{user_starttime},date_add(#{user_starttime}, interval #{member_count} day),#{member_id})
+    </insert>
+
+    <select id="findMemberCountById" resultType="java.util.Map">
+      select member_count from member where member_id=#{member_id}
+    </select>
+
+    <select id="findMemberById" resultType="Member">
+      select * from member where member_id=#{member_id}
+    </select>
+
+    <insert id="addTopUp">
+      insert into topup values(null,#{user_id},#{member_price},now(),1)
+    </insert>
+
+
+    <insert id="addCardRecord">
+        insert into cardrecord values(null,#{user_id},#{member_id},now())
+    </insert>
+
+    <update id="updUserMemberById">
+      update user set
+      user_starttime=now(),
+      user_finshtime=date_add(now(), interval #{member_count} day),
+      user_member_id=#{member_id}
+      where user_id=#{user_id}
+    </update>
+
+    <select id="findMemberByPrice" resultType="java.util.Map">
+        select * from member where member_price=#{member_price}
+    </select>
+
+    <update id="updateUserTimeById">
+        update user set user_finshtime=date_add(#{user_finshtime}, interval #{member_count} day),user_state=1
+        where user_id=#{user_id}
+    </update>
+
+</mapper>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gym.SpringBoot.dao.ISiteDao">
+    <select id="showSite" resultType="Site">
+      select * from site
+    </select>
+
+    <select id="findSiteById" resultType="Site">
+      select * from site where site_id=#{site_id}
+    </select>
+
+    <update id="updSiteById">
+      update site set site_name=#{site_name},site_equipmentname=#{site_equipmentname} where site_id=#{site_id}
+    </update>
+
+    <update id="updSiteStateById">
+      update site set site_state=#{site_state} where site_id=#{site_id}
+    </update>
+
+    <insert id="addSite">
+        insert into site values(null,#{site_name},#{site_equipmentname},1)
+    </insert>
+
+    <select id="chdSiteCourseById" resultType="Map">
+      select * from course where course_site_id=#{site_id} and course_time >= CURDATE()
+    </select>
+</mapper>
